@@ -1,0 +1,6 @@
+{
+    "request": "simplify-expressions",
+    "exprs": [
+        "(/ (exp a) (+ (exp a) (exp b)))"
+    ]
+}
