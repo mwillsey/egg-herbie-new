@@ -118,13 +118,28 @@ define_language! {
     }
 }
 
+#[derive(serde::Deserialize)]
 pub struct ConstantFold {
     pub constant_fold: bool,
+    pub prune: bool,
+}
+
+impl Default for ConstantFold {
+    fn default() -> Self {
+        Self {
+            constant_fold: true,
+            prune: true,
+        }
+    }
 }
 
 impl Analysis<Math> for ConstantFold {
     type Data = Option<Constant>;
     fn make(egraph: &EGraph, enode: &Math) -> Self::Data {
+        if !egraph.analysis.constant_fold {
+            return None;
+        }
+
         let x = |id: &Id| egraph[*id].data.as_ref();
         match enode {
             Math::Add([a, b]) => Some(x(a)? + x(b)?),
@@ -171,12 +186,23 @@ impl Analysis<Math> for ConstantFold {
             _ => None,
         }
     }
+
     fn merge(&self, to: &mut Self::Data, from: Self::Data) -> bool {
         if to.is_none() && from.is_some() {
             *to = from;
             true
         } else {
             false
+        }
+    }
+
+    fn modify(egraph: &mut EGraph, id: Id) {
+        if let Some(constant) = egraph[id].data.clone() {
+            let added = egraph.add(Math::Constant(constant));
+            let (id, _) = egraph.union(id, added);
+            if egraph.analysis.prune {
+                egraph[id].nodes.retain(|n| n.is_leaf())
+            }
         }
     }
 }

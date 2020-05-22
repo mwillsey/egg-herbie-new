@@ -1,5 +1,7 @@
 {
     "request": "simplify-expressions",
+    "constant_fold": false,
+    "prune": false,
     "exprs": [
         "(/ (exp a) (+ (exp a) (exp b)))"
     ]

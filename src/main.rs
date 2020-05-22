@@ -12,10 +12,6 @@ struct RewriteStr {
     rhs: String,
 }
 
-fn default_constant_fold() -> bool {
-    true
-}
-
 #[derive(Deserialize)]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 #[serde(tag = "request")]
@@ -26,9 +22,15 @@ enum Request {
     },
     SimplifyExpressions {
         exprs: Vec<String>,
-        #[serde(default = "default_constant_fold")]
+        #[serde(default = "true_bool")]
         constant_fold: bool,
+        #[serde(default = "true_bool")]
+        prune: bool,
     },
+}
+
+fn true_bool() -> bool {
+    true
 }
 
 #[derive(Serialize)]
@@ -96,6 +98,7 @@ impl State {
             Request::SimplifyExpressions {
                 exprs,
                 constant_fold,
+                prune,
             } => {
                 if self.rewrites.is_empty() {
                     return Response::Error {
@@ -103,7 +106,10 @@ impl State {
                     };
                 }
 
-                let analysis = math::ConstantFold { constant_fold };
+                let analysis = math::ConstantFold {
+                    constant_fold,
+                    prune,
+                };
                 let mut runner = math::Runner::new(analysis).with_node_limit(10_000);
                 for expr in exprs {
                     let e = respond_error!(expr.parse());
