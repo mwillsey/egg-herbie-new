@@ -118,7 +118,6 @@ define_language! {
     }
 }
 
-#[derive(serde::Deserialize)]
 pub struct ConstantFold {
     pub constant_fold: bool,
     pub prune: bool,
