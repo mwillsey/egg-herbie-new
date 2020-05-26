@@ -16,5 +16,5 @@ env_logger = { version = "0.7", default-features = false }
 # path = "../egg"
 # version = "0.4"
 git = "https://github.com/mwillsey/egg"
-rev = "ef5f87759e86a1bf23a376c5110973e5c4323ed3"
+rev = "986bff5c7d2e050e9aa980671c4c7d971c07da6f"
 features = ["serde-1"]
