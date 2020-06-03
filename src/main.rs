@@ -74,6 +74,17 @@ struct State {
     rewrites: Vec<math::Rewrite>,
 }
 
+fn parse_rewrite(rw: &RewriteStr) -> Result<math::Rewrite, String> {
+    Ok(math::Rewrite::new(
+        rw.name.clone(),
+        rw.name.clone(),
+        egg::Pattern::from_str(&rw.lhs)
+            .map_err(|err| format!("Failed to parse lhs of {}: '{}'\n{}", rw.name, rw.lhs, err))?,
+        egg::Pattern::from_str(&rw.rhs)
+            .map_err(|err| format!("Failed to parse rhs of {}: '{}'\n{}", rw.name, rw.rhs, err))?,
+    ))
+}
+
 impl State {
     fn handle_request(&mut self, req: Request) -> Response {
         match req {
@@ -83,12 +94,7 @@ impl State {
             Request::LoadRewrites { rewrites } => {
                 let mut new_rewrites = vec![];
                 for rw in rewrites {
-                    new_rewrites.push(math::Rewrite::new(
-                        rw.name.clone(),
-                        rw.name,
-                        respond_error!(egg::Pattern::from_str(&rw.lhs)),
-                        respond_error!(egg::Pattern::from_str(&rw.rhs)),
-                    ))
+                    new_rewrites.push(respond_error!(parse_rewrite(&rw)));
                 }
                 self.rewrites = new_rewrites;
                 Response::LoadRewrites {
